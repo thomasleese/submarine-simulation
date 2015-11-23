@@ -33,6 +33,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static float SIM_THETA = 0f;
     private static final float SIM_THRUST = 150f;
     private static final String SIM_CSV_DIRECTORY = "~/Desktop";
+    private static final float SIM_STEP_SIZE = 1 / 200f;
 
     // Propeties of the course
     private static final float COURSE_WIDTH = 90f;
@@ -347,7 +348,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
         if (!mPaused) {
-            mWorld.step(1 / 400f, 6, 2);
+            mWorld.step(SIM_STEP_SIZE, 6, 2);
         }
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -402,7 +403,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         if (!mPaused) {
             if (mCsvWriter != null) {
                 try {
-                    mCsvWriter.append(mFrameNumber + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees + "\n");
+                    mCsvWriter.append((mFrameNumber * SIM_STEP_SIZE) + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
