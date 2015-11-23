@@ -19,7 +19,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_HEIGHT = 0.6f;
     private static final float SUB_MASS = 140f;
     private static final float SUB_CROSS_SECTIONAL_AREA = MathUtils.PI * 0.3f * 0.3f;
-    private static final float SUB_DENSITY = 1000f;
+    private static final float SUB_FLUID_DENSITY = 1000f;
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = MathUtils.PI / 2f;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 2f;
@@ -224,7 +224,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         Vector2 velocity = mSubmarine.getLinearVelocity();
 
         float v2 = velocity.len() * velocity.len();
-        float value = 0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_DRAG_COEFFICIENT * v2;
+        float value = 0.5f * SUB_FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_DRAG_COEFFICIENT * v2;
         Vector2 drag = velocity.cpy().nor().scl(-value);
 
         //Gdx.app.debug(TAG, "Velocity = " + velocity + ", Drag = " + drag);
@@ -265,7 +265,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             float v2 = velocity.len() * velocity.len();
             //Gdx.app.log(TAG, "" + v2);
 
-            float value = 0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
+            float value = 0.5f * SUB_FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
 
             Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
 
@@ -286,7 +286,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         float angularVelocity = mSubmarine.getAngularVelocity();
 
         float v2 = angularVelocity * angularVelocity;
-        float value = (0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_SPINNING_DRAG_COEFFICIENT * v2) / SUB_WIDTH;
+        float value = (0.5f * SUB_FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_SPINNING_DRAG_COEFFICIENT * v2) / SUB_WIDTH;
 
         float drag = -value;
         if (angularVelocity < 0) {
