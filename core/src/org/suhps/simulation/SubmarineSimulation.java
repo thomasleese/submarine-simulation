@@ -178,7 +178,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
         if (!mPaused) {
-            mWorld.step(1 / 60f, 6, 2);
+            mWorld.step(1 / 100f, 6, 2);
         }
 
         mRenderer.render(mWorld, mCamera.combined);
@@ -194,12 +194,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             System.out.println(mFrameNumber + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees);
 
             mFrameNumber += 1;
-        }
-
-        try {
-            Thread.sleep(100);
-        } catch (Exception e) {
-
         }
     }
 
