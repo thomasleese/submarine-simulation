@@ -41,7 +41,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mCamera = new OrthographicCamera(Gdx.graphics.getWidth(),
                                          Gdx.graphics.getHeight());
-        mCamera.zoom = 0.01f;
+        mCamera.zoom = 0.02f;
 
         mWorld = new World(new Vector2(0, 0), false);
 
