@@ -10,7 +10,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private static final String TAG = "SUHPS";
 
-    // Properties of the Submarine
+    // Properties of the submarine
     private static final float SUB_WIDTH = 2.2f;
     private static final float SUB_HEIGHT = 0.6f;
     private static final float SUB_MASS = 140f;
@@ -18,12 +18,16 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_DENSITY = 1000f;
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = 2 * MathUtils.PI;
-    private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0f;
+    private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.3f;
     private static final float SUB_INITIAL_SPEED = 7f;
 
-    // Properties of the Simulation
+    // Properties of the simulation
     private static final float SIM_THETA = 10f;
     private static final float SIM_THRUST = 300f;
+
+    // Propeties of the course
+    private static final float COURSE_WIDTH = 90f;
+    private static final float COURSE_HEIGHT = 52f;
 
     private World mWorld;
     private Body mSubmarine;
@@ -39,12 +43,11 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     public void create() {
         Box2D.init();
 
-        //Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        Gdx.app.setLogLevel(Application.LOG_INFO);
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
+        //Gdx.app.setLogLevel(Application.LOG_INFO);
 
         mCamera = new OrthographicCamera(Gdx.graphics.getWidth(),
                                          Gdx.graphics.getHeight());
-        mCamera.zoom = 0.02f;
 
         mWorld = new World(new Vector2(0, 0), false);
 
@@ -53,6 +56,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mSubmarine = createSubmarine();
         mSubmarine.setLinearVelocity(SUB_INITIAL_SPEED, 0f);
+
+        createWalls();
 
         Gdx.input.setInputProcessor(this);
     }
@@ -83,6 +88,23 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         return body;
     }
 
+    private void createWalls() {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(0, 0));
+
+        Body body = mWorld.createBody(bodyDef);
+
+        ChainShape shape = new ChainShape();
+        shape.createLoop(new float[] {
+            -COURSE_WIDTH / 2f, -COURSE_HEIGHT / 2f,
+            +COURSE_WIDTH / 2f, -COURSE_HEIGHT / 2f,
+            +COURSE_WIDTH / 2f, +COURSE_HEIGHT / 2f,
+            -COURSE_WIDTH / 2f, +COURSE_HEIGHT / 2f
+        });
+        body.createFixture(shape, 0.0f);
+        shape.dispose();
+    }
+
     private void drawForce(Vector2 position, Vector2 value) {
         Vector2 start = position;
         Vector2 end = Vector2.X.set(value).scl(0.01f).add(position);
@@ -97,7 +119,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         Vector2 position = mSubmarine.getWorldPoint(new Vector2(-SUB_WIDTH / 2f, 0f));
 
-        Gdx.app.debug(TAG, "Thrust = " + thrust);
+        //Gdx.app.debug(TAG, "Thrust = " + thrust);
 
         if (!mPaused) {
             mSubmarine.applyForce(thrust, position, true);
@@ -114,7 +136,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         float value = 0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_DRAG_COEFFICIENT * v2;
         Vector2 drag = velocity.cpy().nor().scl(-value);
 
-        Gdx.app.debug(TAG, "Velocity = " + velocity + ", Drag = " + drag);
+        //Gdx.app.debug(TAG, "Velocity = " + velocity + ", Drag = " + drag);
 
         if (!mPaused) {
             mSubmarine.applyForceToCenter(drag, true);
@@ -140,7 +162,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
             Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
 
-            Gdx.app.debug(TAG, "Velocity = " + velocity + ", Lift = " + lift);
+            //Gdx.app.debug(TAG, "Velocity = " + velocity + ", Lift = " + lift);
 
             Vector2 position = mSubmarine.getWorldPoint(new Vector2(SUB_WIDTH / 4f, 0f));
 
@@ -159,13 +181,13 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         float v2 = angularVelocity * angularVelocity;
         float value = (0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_SPINNING_DRAG_COEFFICIENT * v2) / SUB_WIDTH;
 
-        float drag = -value;
+        float drag = value;
 
         if (!mPaused) {
             mSubmarine.applyTorque(drag, true);
         }
 
-        Gdx.app.debug(TAG, "Angular Velocity = " + angularVelocity + ", Spinning Drag = " + drag);
+        //Gdx.app.debug(TAG, "Angular Velocity = " + angularVelocity + ", Spinning Drag = " + drag);
     }
 
     @Override
@@ -198,6 +220,20 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
             mFrameNumber += 1;
         }
+    }
+
+    @Override
+    public void resize(int w, int h) {
+        Gdx.app.debug(TAG, "Resizing to " + w + "x" + h + ".");
+        mCamera.setToOrtho(false);
+        mCamera.position.set(0, 0, 0);
+
+        float zoom1 = COURSE_WIDTH / w;
+        float zoom2 = COURSE_HEIGHT / h;
+
+        mCamera.zoom = Math.max(zoom1, zoom2);
+
+        mCamera.update();
     }
 
     @Override

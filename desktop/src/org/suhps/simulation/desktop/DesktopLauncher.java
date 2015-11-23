@@ -9,6 +9,8 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width = 1024;
 		config.height = 768;
+		config.useHDPI = true;
+		config.vSyncEnabled = true;
 		new LwjglApplication(new SubmarineSimulation(), config);
 	}
 }
