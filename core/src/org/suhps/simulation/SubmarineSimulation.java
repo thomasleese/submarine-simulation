@@ -24,6 +24,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = 2 * MathUtils.PI;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.3f;
     private static final float SUB_INITIAL_SPEED = -7f;
+    private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
 
     // Properties of the simulation
     private static final float SIM_THETA = 10f;
@@ -94,7 +95,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(COURSE_WIDTH / 2f - 30, COURSE_HEIGHT / 4f);
-        bodyDef.angle = MathUtils.PI;
+        bodyDef.angle = SUB_INITIAL_ANGLE;
 
         Body body = mWorld.createBody(bodyDef);
 
