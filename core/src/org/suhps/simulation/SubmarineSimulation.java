@@ -31,7 +31,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     // Properties of the simulation
     private static float SIM_THETA = 0f;
-    private static final float SIM_THRUST = 150f;
+    private static final float SIM_MAX_THRUST = 150f;
     private static final String SIM_CSV_DIRECTORY = "~/Desktop";
     private static final float SIM_STEP_SIZE = 1 / 200f;
 
@@ -52,6 +52,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private boolean mPaused = true;
     private int mFrameNumber = 0;
+
+    private float mThrust = 0;
 
     @Override
     public void create() {
@@ -209,7 +211,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     }
 
     private void applyThrust() {
-        Vector2 thrust = new Vector2(SIM_THRUST, 0);
+        Vector2 thrust = new Vector2(mThrust, 0);
         thrust.rotate(SIM_THETA);
         thrust.rotateRad(mSubmarine.getAngle());
 
@@ -398,7 +400,17 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             SIM_THETA -= 1f;
         }
 
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            mThrust += 1f;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            mThrust -= 1f;
+        }
+
         SIM_THETA = MathUtils.clamp(SIM_THETA, -20f, +20f);
+
+        mThrust = MathUtils.clamp(mThrust, 0, SIM_MAX_THRUST);
 
         if (!mPaused) {
             if (mCsvWriter != null) {
