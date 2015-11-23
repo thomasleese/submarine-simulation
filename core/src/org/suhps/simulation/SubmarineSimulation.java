@@ -23,7 +23,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = 2 * MathUtils.PI;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.3f;
-    private static final float SUB_INITIAL_SPEED = 7f;
+    private static final float SUB_INITIAL_SPEED = -7f;
 
     // Properties of the simulation
     private static final float SIM_THETA = 10f;
