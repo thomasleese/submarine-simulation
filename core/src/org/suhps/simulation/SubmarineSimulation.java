@@ -317,7 +317,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
         if (!mPaused) {
-            mWorld.step(1 / 500f, 6, 2);
+            mWorld.step(1 / 400f, 6, 2);
         }
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
