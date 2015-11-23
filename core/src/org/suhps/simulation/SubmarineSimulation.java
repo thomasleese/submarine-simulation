@@ -74,7 +74,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mSubmarine = createSubmarine();
         mSubmarine.setLinearVelocity(SUB_INITIAL_SPEED, 0f);
 
-        createWalls();
+        createCourse();
 
         Gdx.input.setInputProcessor(this);
     }
@@ -93,7 +93,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private Body createSubmarine() {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(0, 0);
+        bodyDef.position.set(COURSE_WIDTH / 2f - 30, COURSE_HEIGHT / 4f);
+        bodyDef.angle = MathUtils.PI;
 
         Body body = mWorld.createBody(bodyDef);
 
@@ -116,6 +117,18 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         return body;
     }
 
+    private void createObstacle(float x, float y) {
+        CircleShape shape = new CircleShape();
+        shape.setRadius(0.1f);
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(x, y));
+
+        Body body = mWorld.createBody(bodyDef);
+        body.createFixture(shape, 0.0f);
+        shape.dispose();
+    }
+
     private void createWalls() {
         BodyDef bodyDef = new BodyDef();
         bodyDef.position.set(new Vector2(0, 0));
@@ -131,6 +144,12 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         });
         body.createFixture(shape, 0.0f);
         shape.dispose();
+    }
+
+    private void createCourse() {
+        createWalls();
+
+        createObstacle(0, 0);
     }
 
     private void drawForce(Vector2 position, Vector2 value) {
