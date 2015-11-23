@@ -21,14 +21,14 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_CROSS_SECTIONAL_AREA = MathUtils.PI * 0.3f * 0.3f;
     private static final float SUB_DENSITY = 1000f;
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
-    private static final float SUB_LIFT_COEFFICIENT_SLOPE = 2 * MathUtils.PI;
-    private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.3f;
-    private static final float SUB_INITIAL_SPEED = -7f;
+    private static final float SUB_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
+    private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.6f;
+    private static final float SUB_INITIAL_SPEED = 0f;
     private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
 
     // Properties of the simulation
-    private static final float SIM_THETA = 10f;
-    private static final float SIM_THRUST = 300f;
+    private static float SIM_THETA = 0f;
+    private static final float SIM_THRUST = 150f;
     private static final String SIM_CSV_DIRECTORY = "~/Desktop";
 
     // Propeties of the course
@@ -253,14 +253,18 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private void applyLift() {
         Vector2 velocity = mSubmarine.getLinearVelocity();
-        float angle = mSubmarine.getAngle();
+        float angle = wrapAngle(mSubmarine.getAngle());
 
-        float alpha = wrapAngle(angle - velocity.angleRad());
+        float alpha = wrapAngle(angle - wrapAngle(velocity.angleRad()));
+
+        //Gdx.app.log(TAG, "" + angle + "\t" + velocity.angleRad() + "\t" + alpha);
 
         if (Math.abs(alpha) < MathUtils.degreesToRadians * 15) {
             float liftCoefficient = alpha * SUB_LIFT_COEFFICIENT_SLOPE;
 
             float v2 = velocity.len() * velocity.len();
+            //Gdx.app.log(TAG, "" + v2);
+
             float value = 0.5f * SUB_DENSITY * SUB_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
 
             Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
@@ -350,6 +354,14 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.end();
 
         mRenderer.render(mWorld, mCamera.combined);
+
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            SIM_THETA += 1f;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            SIM_THETA -= 1f;
+        }
 
         if (!mPaused) {
             if (mCsvWriter != null) {
