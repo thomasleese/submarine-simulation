@@ -348,7 +348,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         applyThrust();
         applyDrag();
-        applyLift();
+        //applyLift();
         applySpinningDrag();
 
         mShapeRenderer.end();
