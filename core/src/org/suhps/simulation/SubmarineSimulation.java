@@ -28,6 +28,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     // Properties of the fins
     private static final float FINS_CROSS_SECTIONAL_AREA = 0.1f;
     private static final float FINS_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
+    private static final float FINS_DRAG_COEFFICIENT = 0.03f;
 
     // Properties of the simulation
     private static float SIM_THETA = 0f;
@@ -205,7 +206,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private void drawForce(Vector2 position, Vector2 value) {
         Vector2 start = position;
-        Vector2 end = Vector2.X.set(value).scl(0.01f).add(position);
+        Vector2 end = Vector2.X.set(value).scl(0.02f).add(position);
         mShapeRenderer.x(position, 0.1f);
         mShapeRenderer.line(position, end);
     }
@@ -289,7 +290,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         }
     }
 
-    private void applyFins() {
+    private void applyFinsLift() {
         Vector2 velocity = mSubmarine.getLinearVelocity();
         float angle = wrapAngle(mSubmarine.getAngle());
 
@@ -313,6 +314,23 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             mShapeRenderer.setColor(1f, 0.5f, 0.3f, 1f);
             drawForce(position, lift);
         }
+    }
+
+    private void applyFinsDrag() {
+        Vector2 velocity = mSubmarine.getLinearVelocity();
+
+        float v2 = velocity.len() * velocity.len();
+        float value = 0.5f * FLUID_DENSITY * FINS_CROSS_SECTIONAL_AREA * FINS_DRAG_COEFFICIENT * v2;
+        Vector2 drag = velocity.cpy().nor().scl(-value);
+
+        if (!mPaused) {
+            mSubmarine.applyForceToCenter(drag, true);
+        }
+
+        Vector2 position = mSubmarine.getWorldCenter().cpy();
+
+        mShapeRenderer.setColor(0.9f, 0f, 0.7f, 1f);
+        drawForce(position, drag);
     }
 
     private void applySpinningDrag() {
@@ -385,7 +403,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         applyThrust();
         applyDrag();
         applyLift();
-        applyFins();
+        applyFinsLift();
+        applyFinsDrag();
         applySpinningDrag();
 
         mShapeRenderer.end();
