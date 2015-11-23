@@ -18,7 +18,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_WIDTH = 2.2f;
     private static final float SUB_HEIGHT = 0.6f;
     private static final float SUB_MASS = 140f;
-    private static final float SUB_CROSS_SECTIONAL_AREA = MathUtils.PI * 0.3f * 0.3f;
+    private static final float SUB_CROSS_SECTIONAL_AREA = MathUtils.PI * 0.3f * 0.6f;
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = MathUtils.PI / 2f;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 2f;
@@ -26,14 +26,14 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
 
     // Properties of the fins
-    private static final float FINS_CROSS_SECTIONAL_AREA = 0.3f;
+    private static final float FINS_CROSS_SECTIONAL_AREA = 0.1f;
     private static final float FINS_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
 
     // Properties of the simulation
     private static float SIM_THETA = 0f;
     private static final float SIM_MAX_THRUST = 150f;
     private static final String SIM_CSV_DIRECTORY = "~/Desktop";
-    private static final float SIM_STEP_SIZE = 1 / 200f;
+    private static final float SIM_STEP_SIZE = 1 / 100f;
 
     // Propeties of the course
     private static final float COURSE_WIDTH = 90f;
