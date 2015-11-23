@@ -366,6 +366,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             SIM_THETA -= 1f;
         }
 
+        SIM_THETA = MathUtils.clamp(SIM_THETA, -10f, +10f);
+
         if (!mPaused) {
             if (mCsvWriter != null) {
                 try {
