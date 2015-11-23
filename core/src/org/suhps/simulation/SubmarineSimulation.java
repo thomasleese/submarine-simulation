@@ -10,8 +10,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private static final String TAG = "SUHPS";
 
-    private static final float THETA = 10f;  // degrees
-
+    // Properties of the Submarine
     private static final float SUB_WIDTH = 2.2f;
     private static final float SUB_HEIGHT = 0.6f;
     private static final float SUB_MASS = 140f;
@@ -21,6 +20,10 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_LIFT_COEFFICIENT_SLOPE = 2 * MathUtils.PI;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0f;
     private static final float SUB_INITIAL_SPEED = 7f;
+
+    // Properties of the Simulation
+    private static final float SIM_THETA = 10f;
+    private static final float SIM_THRUST = 300f;
 
     private World mWorld;
     private Body mSubmarine;
@@ -88,8 +91,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     }
 
     private void applyThrust() {
-        Vector2 thrust = new Vector2(300f, 0);
-        thrust.rotate(THETA);
+        Vector2 thrust = new Vector2(SIM_THRUST, 0);
+        thrust.rotate(SIM_THETA);
         thrust.rotateRad(mSubmarine.getAngle());
 
         Vector2 position = mSubmarine.getWorldPoint(new Vector2(-SUB_WIDTH / 2f, 0f));
