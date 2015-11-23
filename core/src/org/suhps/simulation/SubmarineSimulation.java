@@ -152,8 +152,31 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         shape.dispose();
     }
 
+    private void createBarrier() {
+        CircleShape circleShape = new CircleShape();
+        circleShape.setRadius(4f);
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(0, 0));
+
+        Body body = mWorld.createBody(bodyDef);
+        body.createFixture(circleShape, 0.0f);
+        circleShape.dispose();
+
+        PolygonShape polygonShape = new PolygonShape();
+        polygonShape.setAsBox(COURSE_WIDTH / 4f, 1.5f);
+
+        bodyDef = new BodyDef();
+        bodyDef.position.set(new Vector2(COURSE_WIDTH / 4f, 0));
+
+        body = mWorld.createBody(bodyDef);
+        body.createFixture(polygonShape, 0.0f);
+        polygonShape.dispose();
+    }
+
     private void createCourse() {
         createWalls();
+        createBarrier();
 
         createObstacle(COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f - 6.5f);
         createObstacle(COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f + 6.5f);
@@ -292,18 +315,26 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
+        // sub
         mShapeRenderer.identity();
         mShapeRenderer.translate(position.x, position.y, 0);
         mShapeRenderer.rotate(0, 0, 1, mSubmarine.getAngle() * MathUtils.radiansToDegrees);
         mShapeRenderer.setColor(0, 0, 0, 1);
         mShapeRenderer.ellipse(-SUB_WIDTH, -SUB_HEIGHT, SUB_WIDTH * 2f, SUB_HEIGHT * 2f);
 
+        // obstacles
+        mShapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
+
         for (Body body : mObstacles) {
             mShapeRenderer.identity();
-            mShapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
             mShapeRenderer.translate(body.getWorldCenter().x, body.getWorldCenter().y, 0);
             mShapeRenderer.circle(0, 0, 0.4f, 8);
         }
+
+        // barrier
+        mShapeRenderer.identity();
+        mShapeRenderer.circle(0, 0, 4f, 32);
+        mShapeRenderer.rect(0, -1.5f, COURSE_WIDTH / 2f, 3f);
 
         mShapeRenderer.end();
 

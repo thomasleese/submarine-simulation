@@ -11,6 +11,7 @@ public class DesktopLauncher {
 		config.height = 768;
 		config.useHDPI = true;
 		config.vSyncEnabled = true;
+		config.title = "Submarine Simulation";
 		new LwjglApplication(new SubmarineSimulation(), config);
 	}
 }
