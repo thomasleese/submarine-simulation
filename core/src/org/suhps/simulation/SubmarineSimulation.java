@@ -148,11 +148,23 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         drawForce(position, drag);
     }
 
+    private float wrapAngle(float angle) {
+        while (angle > MathUtils.PI) {
+            angle -= MathUtils.PI2;
+        }
+
+        while (angle < -MathUtils.PI) {
+            angle += MathUtils.PI2;
+        }
+
+        return angle;
+    }
+
     private void applyLift() {
         Vector2 velocity = mSubmarine.getLinearVelocity();
         float angle = mSubmarine.getAngle();
 
-        float alpha = angle - velocity.angleRad();
+        float alpha = wrapAngle(angle - velocity.angleRad());
 
         if (Math.abs(alpha) < MathUtils.degreesToRadians * 15) {
             float liftCoefficient = alpha * SUB_LIFT_COEFFICIENT_SLOPE;
