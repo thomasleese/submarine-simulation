@@ -43,6 +43,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private Box2DDebugRenderer mRenderer;
 
     private FileWriter mCsvWriter;
+    private List<Body> mObstacles;
 
     private boolean mPaused = true;
     private int mFrameNumber = 0;
@@ -63,6 +64,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         }
 
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
+        mObstacles = new ArrayList<Body>();
 
         mCamera = new OrthographicCamera(Gdx.graphics.getWidth(),
                                          Gdx.graphics.getHeight());
@@ -94,7 +97,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private Body createSubmarine() {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(COURSE_WIDTH / 2f - 30, COURSE_HEIGHT / 4f);
+        bodyDef.position.set(COURSE_WIDTH / 2f - 15, COURSE_HEIGHT / 4f);
         bodyDef.angle = SUB_INITIAL_ANGLE;
 
         Body body = mWorld.createBody(bodyDef);
@@ -128,6 +131,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         Body body = mWorld.createBody(bodyDef);
         body.createFixture(shape, 0.0f);
         shape.dispose();
+
+        mObstacles.add(body);
     }
 
     private void createWalls() {
@@ -150,13 +155,28 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private void createCourse() {
         createWalls();
 
-        createObstacle(0, 0);
+        createObstacle(COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f - 6.5f);
+        createObstacle(COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f + 6.5f);
+
+        createObstacle(-COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f - 6.5f);
+        createObstacle(-COURSE_WIDTH / 4f, COURSE_HEIGHT / 4f + 6.5f);
+        createObstacle(-COURSE_WIDTH / 6f, COURSE_HEIGHT / 4f - 6.5f);
+        createObstacle(-COURSE_WIDTH / 6f, COURSE_HEIGHT / 4f + 6.5f);
+
+        float gap = -COURSE_WIDTH / 8f;
+        createObstacle(-gap, -COURSE_HEIGHT / 4f);
+        createObstacle(0, -COURSE_HEIGHT / 4f);
+        createObstacle(+gap, -COURSE_HEIGHT / 4f);
+        createObstacle(+gap * 2f, -COURSE_HEIGHT / 4f);
+
+        createObstacle(COURSE_WIDTH / 4f, -COURSE_HEIGHT / 4f - 6.5f);
+        createObstacle(COURSE_WIDTH / 4f, -COURSE_HEIGHT / 4f + 6.5f);
     }
 
     private void drawForce(Vector2 position, Vector2 value) {
         Vector2 start = position;
         Vector2 end = Vector2.X.set(value).scl(0.01f).add(position);
-        mShapeRenderer.x(position, 0.1f);
+        mShapeRenderer.x(position, 0.08f);
         mShapeRenderer.line(position, end);
     }
 
@@ -252,21 +272,44 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(1, 1, 0.95f, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        mShapeRenderer.identity();
+        mShapeRenderer.setColor(0.95f, 1f, 1f, 1);
+        mShapeRenderer.rect(-COURSE_WIDTH / 2f, -COURSE_HEIGHT / 2f, COURSE_WIDTH, COURSE_HEIGHT);
+        mShapeRenderer.end();
 
         Vector2 position = mSubmarine.getWorldCenter();
         mCamera.update();
 
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
-        mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
         if (!mPaused) {
             mWorld.step(1 / 100f, 6, 2);
         }
 
-        mRenderer.render(mWorld, mCamera.combined);
+        mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        mShapeRenderer.identity();
+        mShapeRenderer.translate(position.x, position.y, 0);
+        mShapeRenderer.rotate(0, 0, 1, mSubmarine.getAngle() * MathUtils.radiansToDegrees);
+        mShapeRenderer.setColor(0, 0, 0, 1);
+        mShapeRenderer.ellipse(-SUB_WIDTH, -SUB_HEIGHT, SUB_WIDTH * 2f, SUB_HEIGHT * 2f);
+
+        for (Body body : mObstacles) {
+            mShapeRenderer.identity();
+            mShapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
+            mShapeRenderer.translate(body.getWorldCenter().x, body.getWorldCenter().y, 0);
+            mShapeRenderer.circle(0, 0, 0.4f, 8);
+        }
+
+        mShapeRenderer.end();
+
+        mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        mShapeRenderer.identity();
 
         applyThrust();
         applyDrag();
@@ -274,6 +317,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         applySpinningDrag();
 
         mShapeRenderer.end();
+
+        mRenderer.render(mWorld, mCamera.combined);
 
         if (!mPaused) {
             if (mCsvWriter != null) {
