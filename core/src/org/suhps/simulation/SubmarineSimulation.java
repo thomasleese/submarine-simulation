@@ -26,7 +26,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
 
     // Properties of the fins
-    private static final float FINS_CROSS_SECTIONAL_AREA = 0.6f;
+    private static final float FINS_CROSS_SECTIONAL_AREA = 0.3f;
     private static final float FINS_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
 
     // Properties of the simulation
