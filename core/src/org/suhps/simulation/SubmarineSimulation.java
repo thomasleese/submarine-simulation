@@ -420,11 +420,11 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            mThrust += 1f;
+            mThrust -= 1f;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            mThrust -= 1f;
+            mThrust += 1f;
         }
 
         SIM_THETA = MathUtils.clamp(SIM_THETA, -20f, +20f);
