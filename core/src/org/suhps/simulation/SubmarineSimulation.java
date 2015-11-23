@@ -1,5 +1,9 @@
 package org.suhps.simulation;
 
+import java.io.*;
+import java.text.*;
+import java.util.*;
+
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.*;
@@ -24,6 +28,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     // Properties of the simulation
     private static final float SIM_THETA = 10f;
     private static final float SIM_THRUST = 300f;
+    private static final String SIM_CSV_DIRECTORY = "~/Desktop";
 
     // Propeties of the course
     private static final float COURSE_WIDTH = 90f;
@@ -36,6 +41,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private ShapeRenderer mShapeRenderer;
     private Box2DDebugRenderer mRenderer;
 
+    private FileWriter mCsvWriter;
+
     private boolean mPaused = true;
     private int mFrameNumber = 0;
 
@@ -43,8 +50,18 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     public void create() {
         Box2D.init();
 
+        try {
+            SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd hhmmss");
+            String path = SIM_CSV_DIRECTORY.replaceFirst("~", System.getProperty("user.home"));
+            path += "/Sub " + dt.format(new Date()) + ".csv";
+            Gdx.app.log(TAG, "Writing CSV file to: " + path);
+            mCsvWriter = new FileWriter(path);
+            mCsvWriter.append("Time,X,Y,Angle\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        //Gdx.app.setLogLevel(Application.LOG_INFO);
 
         mCamera = new OrthographicCamera(Gdx.graphics.getWidth(),
                                          Gdx.graphics.getHeight());
@@ -60,6 +77,17 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         createWalls();
 
         Gdx.input.setInputProcessor(this);
+    }
+
+    @Override
+    public void dispose() {
+        if (mCsvWriter != null) {
+            try {
+                mCsvWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private Body createSubmarine() {
@@ -228,7 +256,13 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.end();
 
         if (!mPaused) {
-            System.out.println(mFrameNumber + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees);
+            if (mCsvWriter != null) {
+                try {
+                    mCsvWriter.append(mFrameNumber + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             mFrameNumber += 1;
         }
