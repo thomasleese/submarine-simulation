@@ -203,7 +203,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private void drawForce(Vector2 position, Vector2 value) {
         Vector2 start = position;
         Vector2 end = Vector2.X.set(value).scl(0.01f).add(position);
-        mShapeRenderer.x(position, 0.08f);
+        mShapeRenderer.x(position, 0.1f);
         mShapeRenderer.line(position, end);
     }
 
