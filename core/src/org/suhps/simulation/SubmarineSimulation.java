@@ -21,7 +21,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_CROSS_SECTIONAL_AREA = MathUtils.PI * 0.3f * 0.3f;
     private static final float SUB_DENSITY = 1000f;
     private static final float SUB_DRAG_COEFFICIENT = 0.04f;
-    private static final float SUB_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
+    private static final float SUB_LIFT_COEFFICIENT_SLOPE = MathUtils.PI / 2f;
     private static final float SUB_SPINNING_DRAG_COEFFICIENT = 0.6f;
     private static final float SUB_INITIAL_SPEED = 0f;
     private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
