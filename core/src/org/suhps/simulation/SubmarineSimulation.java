@@ -25,6 +25,10 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float SUB_INITIAL_SPEED = 0f;
     private static final float SUB_INITIAL_ANGLE = MathUtils.PI;
 
+    // Properties of the fins
+    private static final float FIN_CROSS_SECTIONAL_AREA = 0.6f;
+    private static final float FIN_LIFT_COEFFICIENT_SLOPE = MathUtils.PI;
+
     // Properties of the simulation
     private static float SIM_THETA = 0f;
     private static final float SIM_THRUST = 150f;
@@ -282,6 +286,32 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         }
     }
 
+    private void applyFins() {
+        Vector2 velocity = mSubmarine.getLinearVelocity();
+        float angle = wrapAngle(mSubmarine.getAngle());
+
+        float alpha = wrapAngle(angle - wrapAngle(velocity.angleRad()));
+
+        if (Math.abs(alpha) < MathUtils.degreesToRadians * 15) {
+            float liftCoefficient = alpha * FIN_LIFT_COEFFICIENT_SLOPE;
+
+            float v2 = velocity.len() * velocity.len();
+
+            float value = 0.5f * FLUID_DENSITY * FIN_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
+
+            Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
+
+            Vector2 position = mSubmarine.getWorldPoint(new Vector2(-SUB_WIDTH / 2f, 0f));
+
+            if (!mPaused) {
+                mSubmarine.applyForce(lift, position, true);
+            }
+
+            mShapeRenderer.setColor(1f, 0.5f, 0.3f, 1f);
+            drawForce(position, lift);
+        }
+    }
+
     private void applySpinningDrag() {
         float angularVelocity = mSubmarine.getAngularVelocity();
 
@@ -352,6 +382,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         applyThrust();
         applyDrag();
         applyLift();
+        applyFins();
         applySpinningDrag();
 
         mShapeRenderer.end();
