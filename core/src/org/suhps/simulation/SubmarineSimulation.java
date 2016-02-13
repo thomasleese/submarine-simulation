@@ -31,9 +31,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float FINS_DRAG_COEFFICIENT = 0.03f;
 
     // Properties of the simulation
-    private static float SIM_THETA = 0f;
     private static final float SIM_MAX_THRUST = 150f;
-    private static final String SIM_CSV_DIRECTORY = "~/Desktop";
     private static final float SIM_STEP_SIZE = 1 / 100f;
 
     // Properties of the course
@@ -42,7 +40,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float FLUID_DENSITY = 1000f;
 
     private World mWorld;
-    private Body mSubmarine;
+    private Submarine mSubmarine;
 
     private OrthographicCamera mCamera;
     private ShapeRenderer mShapeRenderer;
@@ -56,6 +54,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private int mFrameNumber = 0;
 
     private float mThrust = 0;
+    private float mTheta = 0;
 
     @Override
     public void create() {
@@ -76,7 +75,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer = new ShapeRenderer();
 
         mSubmarine = createSubmarine();
-        mSubmarine.setLinearVelocity(SUB_INITIAL_SPEED, 0f);
 
         createCourse();
 
@@ -88,31 +86,12 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mLogger.dispose();
     }
 
-    private Body createSubmarine() {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(COURSE_WIDTH / 2f - 15, COURSE_HEIGHT / 4f);
-        bodyDef.angle = SUB_INITIAL_ANGLE;
-
-        Body body = mWorld.createBody(bodyDef);
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(SUB_WIDTH / 2f, SUB_HEIGHT / 2f);
-
-        float area = SUB_WIDTH * SUB_HEIGHT;
-        float density = SUB_MASS / area;
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.density = density;
-        fixtureDef.friction = 0f;
-        fixtureDef.restitution = 0f;
-
-        body.createFixture(fixtureDef);
-
-        shape.dispose();
-
-        return body;
+    private Submarine createSubmarine() {
+        return new Submarine(SUB_WIDTH, SUB_HEIGHT, SUB_MASS, SUB_CROSS_SECTIONAL_AREA,
+                SUB_DRAG_COEFFICIENT, SUB_LIFT_COEFFICIENT_SLOPE, SUB_SPINNING_DRAG_COEFFICIENT,
+                FINS_CROSS_SECTIONAL_AREA, FINS_LIFT_COEFFICIENT_SLOPE, FINS_DRAG_COEFFICIENT,
+                COURSE_WIDTH / 2f - 15, COURSE_HEIGHT / 4f, SUB_INITIAL_SPEED, SUB_INITIAL_ANGLE,
+                mWorld);
     }
 
     private void createObstacle(float x, float y) {
@@ -190,152 +169,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         createObstacle(COURSE_WIDTH / 4f, -COURSE_HEIGHT / 4f + 6.5f);
     }
 
-    private void drawForce(Vector2 position, Vector2 value) {
-        Vector2 end = Vector2.X.set(value).scl(0.02f).add(position);
-        mShapeRenderer.x(position, 0.1f);
-        mShapeRenderer.line(position, end);
-    }
-
-    private void applyThrust() {
-        Vector2 thrust = new Vector2(mThrust, 0);
-        thrust.rotate(SIM_THETA);
-        thrust.rotateRad(mSubmarine.getAngle());
-
-        Vector2 position = mSubmarine.getWorldPoint(new Vector2(-SUB_WIDTH / 2f, 0f));
-
-        //Gdx.app.debug(TAG, "Thrust = " + thrust);
-
-        if (!mPaused) {
-            mSubmarine.applyForce(thrust, position, true);
-        }
-
-        mShapeRenderer.setColor(1f, 0f, 0f, 1f);
-        drawForce(position, thrust);
-    }
-
-    private void applyDrag() {
-        Vector2 velocity = mSubmarine.getLinearVelocity();
-
-        float v2 = velocity.len() * velocity.len();
-        float value = 0.5f * FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_DRAG_COEFFICIENT * v2;
-        Vector2 drag = velocity.cpy().nor().scl(-value);
-
-        //Gdx.app.debug(TAG, "Velocity = " + velocity + ", Drag = " + drag);
-
-        if (!mPaused) {
-            mSubmarine.applyForceToCenter(drag, true);
-        }
-
-        Vector2 position = mSubmarine.getWorldCenter().cpy();
-
-        mShapeRenderer.setColor(0f, 1f, 0f, 1f);
-        drawForce(position, drag);
-    }
-
-    private float wrapAngle(float angle) {
-        while (angle > MathUtils.PI) {
-            angle -= MathUtils.PI2;
-        }
-
-        while (angle < -MathUtils.PI) {
-            angle += MathUtils.PI2;
-        }
-
-        return angle;
-    }
-
-    private void applyLift() {
-        Vector2 velocity = mSubmarine.getLinearVelocity();
-        float angle = wrapAngle(mSubmarine.getAngle());
-
-        float alpha = wrapAngle(angle - wrapAngle(velocity.angleRad()));
-
-        //Gdx.app.log(TAG, "" + angle + "\t" + velocity.angleRad() + "\t" + alpha);
-
-        if (Math.abs(alpha) < MathUtils.degreesToRadians * 15) {
-            float liftCoefficient = alpha * SUB_LIFT_COEFFICIENT_SLOPE;
-
-            float v2 = velocity.len() * velocity.len();
-            //Gdx.app.log(TAG, "" + v2);
-
-            float value = 0.5f * FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
-
-            Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
-
-            //Gdx.app.debug(TAG, "Velocity = " + velocity + ", Lift = " + lift);
-
-            Vector2 position = mSubmarine.getWorldPoint(new Vector2(SUB_WIDTH / 4f, 0f));
-
-            if (!mPaused) {
-                mSubmarine.applyForce(lift, position, true);
-            }
-
-            mShapeRenderer.setColor(0f, 0f, 1f, 1f);
-            drawForce(position, lift);
-        }
-    }
-
-    private void applyFinsLift() {
-        Vector2 velocity = mSubmarine.getLinearVelocity();
-        float angle = wrapAngle(mSubmarine.getAngle());
-
-        float alpha = wrapAngle(angle - wrapAngle(velocity.angleRad()));
-
-        if (Math.abs(alpha) < MathUtils.degreesToRadians * 15) {
-            float liftCoefficient = alpha * FINS_LIFT_COEFFICIENT_SLOPE;
-
-            float v2 = velocity.len() * velocity.len();
-
-            float value = 0.5f * FLUID_DENSITY * FINS_CROSS_SECTIONAL_AREA * liftCoefficient * v2;
-
-            Vector2 lift = velocity.cpy().nor().rotate90(1).scl(value);
-
-            Vector2 position = mSubmarine.getWorldPoint(new Vector2(-SUB_WIDTH / 2f, 0f));
-
-            if (!mPaused) {
-                mSubmarine.applyForce(lift, position, true);
-            }
-
-            mShapeRenderer.setColor(1f, 0.5f, 0.3f, 1f);
-            drawForce(position, lift);
-        }
-    }
-
-    private void applyFinsDrag() {
-        Vector2 velocity = mSubmarine.getLinearVelocity();
-
-        float v2 = velocity.len() * velocity.len();
-        float value = 0.5f * FLUID_DENSITY * FINS_CROSS_SECTIONAL_AREA * FINS_DRAG_COEFFICIENT * v2;
-        Vector2 drag = velocity.cpy().nor().scl(-value);
-
-        if (!mPaused) {
-            mSubmarine.applyForceToCenter(drag, true);
-        }
-
-        Vector2 position = mSubmarine.getWorldCenter().cpy();
-
-        mShapeRenderer.setColor(0.9f, 0f, 0.7f, 1f);
-        drawForce(position, drag);
-    }
-
-    private void applySpinningDrag() {
-        float angularVelocity = mSubmarine.getAngularVelocity();
-
-        float v2 = angularVelocity * angularVelocity;
-        float value = (0.5f * FLUID_DENSITY * SUB_CROSS_SECTIONAL_AREA * SUB_SPINNING_DRAG_COEFFICIENT * v2) / SUB_WIDTH;
-
-        float drag = -value;
-        if (angularVelocity < 0) {
-            drag = value;
-        }
-
-        if (!mPaused) {
-            mSubmarine.applyTorque(drag, true);
-        }
-
-        //Gdx.app.debug(TAG, "Angular Velocity = " + angularVelocity + ", Spinning Drag = " + drag);
-    }
-
     @Override
     public void render() {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -385,23 +218,18 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mShapeRenderer.identity();
 
-        applyThrust();
-        applyDrag();
-        applyLift();
-        applyFinsLift();
-        applyFinsDrag();
-        applySpinningDrag();
+        mSubmarine.update(mShapeRenderer, mThrust, mTheta, FLUID_DENSITY);
 
         mShapeRenderer.end();
 
         mRenderer.render(mWorld, mCamera.combined);
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            SIM_THETA += 1f;
+            mTheta += 1f;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            SIM_THETA -= 1f;
+            mTheta -= 1f;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
@@ -412,8 +240,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
             mThrust += 1f;
         }
 
-        SIM_THETA = MathUtils.clamp(SIM_THETA, -20f, +20f);
-
+        mTheta = MathUtils.clamp(mTheta, -20f, +20f);
         mThrust = MathUtils.clamp(mThrust, 0, SIM_MAX_THRUST);
 
         if (!mPaused) {
