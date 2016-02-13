@@ -41,7 +41,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float FLUID_DENSITY = 1000f;
 
     private World mWorld;
-    private Submarine mSubmarine;
 
     private OrthographicCamera mCamera;
     private ShapeRenderer mShapeRenderer;
@@ -49,7 +48,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private Logger mLogger;
 
-    private List<Body> mObstacles;
+    private List<Body> mObstacles = new ArrayList<Body>();
+    private List<Submarine> mSubmarines = new ArrayList<Submarine>();
 
     private boolean mPaused = true;
     private int mFrameNumber = 0;
@@ -62,8 +62,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-        mObstacles = new ArrayList<Body>();
-
         mCamera = new OrthographicCamera(Gdx.graphics.getWidth(),
                                          Gdx.graphics.getHeight());
 
@@ -72,12 +70,17 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mRenderer = new Box2DDebugRenderer();
         mShapeRenderer = new ShapeRenderer();
 
-        mSubmarine = createSubmarine();
+        for (int i = 0; i < 10; i++) {
+            mSubmarines.add(createSubmarine());
+        }
 
         createCourse();
 
         Gdx.input.setInputProcessor(this);
-        Controllers.addListener(mSubmarine);
+
+        for (Submarine submarine : mSubmarines) {
+            Controllers.addListener(submarine);
+        }
     }
 
     @Override
@@ -86,10 +89,13 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     }
 
     private Submarine createSubmarine() {
+        float dx = 0f; //MathUtils.random(-100f, 100f);
+        float dy = MathUtils.random(-10f, 10f);
+
         return new Submarine(SUB_WIDTH, SUB_HEIGHT, SUB_MASS, SUB_CROSS_SECTIONAL_AREA,
                 SUB_DRAG_COEFFICIENT, SUB_LIFT_COEFFICIENT_SLOPE, SUB_SPINNING_DRAG_COEFFICIENT,
                 FINS_CROSS_SECTIONAL_AREA, FINS_LIFT_COEFFICIENT_SLOPE, FINS_DRAG_COEFFICIENT,
-                COURSE_WIDTH / 2f - 15, COURSE_HEIGHT / 4f, SUB_INITIAL_SPEED, SUB_INITIAL_ANGLE,
+                COURSE_WIDTH / 2f - 15 + dx, COURSE_HEIGHT / 4f + dy, SUB_INITIAL_SPEED, SUB_INITIAL_ANGLE,
                 mWorld);
     }
 
@@ -179,7 +185,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.rect(-COURSE_WIDTH / 2f, -COURSE_HEIGHT / 2f, COURSE_WIDTH, COURSE_HEIGHT);
         mShapeRenderer.end();
 
-        Vector2 position = mSubmarine.getWorldCenter();
         mCamera.update();
 
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
@@ -191,11 +196,14 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // sub
-        mShapeRenderer.identity();
-        mShapeRenderer.translate(position.x, position.y, 0);
-        mShapeRenderer.rotate(0, 0, 1, mSubmarine.getAngle() * MathUtils.radiansToDegrees);
-        mShapeRenderer.setColor(0, 0, 0, 1);
-        mShapeRenderer.ellipse(-SUB_WIDTH, -SUB_HEIGHT, SUB_WIDTH * 2f, SUB_HEIGHT * 2f);
+        for (Submarine submarine : mSubmarines) {
+            Vector2 position = submarine.getWorldCenter();
+            mShapeRenderer.identity();
+            mShapeRenderer.translate(position.x, position.y, 0);
+            mShapeRenderer.rotate(0, 0, 1, submarine.getAngle() * MathUtils.radiansToDegrees);
+            mShapeRenderer.setColor(0, 0, 0, 1);
+            mShapeRenderer.ellipse(-SUB_WIDTH, -SUB_HEIGHT, SUB_WIDTH * 2f, SUB_HEIGHT * 2f);
+        }
 
         // obstacles
         mShapeRenderer.setColor(0.5f, 0.5f, 0.5f, 1);
@@ -217,15 +225,18 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mShapeRenderer.identity();
 
-        mSubmarine.update(mShapeRenderer, FLUID_DENSITY);
+        for (Submarine submarine : mSubmarines) {
+            submarine.update(mShapeRenderer, FLUID_DENSITY);
+        }
 
         mShapeRenderer.end();
 
         mRenderer.render(mWorld, mCamera.combined);
 
         if (!mPaused) {
-            mLogger.log(mFrameNumber * SIM_STEP_SIZE, position.x, position.y,
-                    mSubmarine.getAngle() * MathUtils.radiansToDegrees);
+            Submarine submarine = mSubmarines.get(0);
+            mLogger.log(mFrameNumber * SIM_STEP_SIZE, submarine.getWorldCenter().x,
+                    submarine.getWorldCenter().y, submarine.getAngle() * MathUtils.radiansToDegrees);
 
             mFrameNumber += 1;
         }
