@@ -48,7 +48,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private ShapeRenderer mShapeRenderer;
     private Box2DDebugRenderer mRenderer;
 
-    private FileWriter mCsvWriter;
+    private Logger mLogger;
+
     private List<Body> mObstacles;
 
     private boolean mPaused = true;
@@ -60,16 +61,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     public void create() {
         Box2D.init();
 
-        try {
-            SimpleDateFormat dt = new SimpleDateFormat("yyyyMMdd hhmmss");
-            String path = SIM_CSV_DIRECTORY.replaceFirst("~", System.getProperty("user.home"));
-            path += "/Sub " + dt.format(new Date()) + ".csv";
-            Gdx.app.log(TAG, "Writing CSV file to: " + path);
-            mCsvWriter = new FileWriter(path);
-            mCsvWriter.append("Time,X,Y,Angle\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mLogger = new Logger();
 
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
@@ -93,13 +85,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     @Override
     public void dispose() {
-        if (mCsvWriter != null) {
-            try {
-                mCsvWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        mLogger.dispose();
     }
 
     private Body createSubmarine() {
@@ -431,13 +417,8 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mThrust = MathUtils.clamp(mThrust, 0, SIM_MAX_THRUST);
 
         if (!mPaused) {
-            if (mCsvWriter != null) {
-                try {
-                    mCsvWriter.append((mFrameNumber * SIM_STEP_SIZE) + "," + position.x + "," + position.y + "," + mSubmarine.getAngle() * MathUtils.radiansToDegrees + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            mLogger.log(mFrameNumber * SIM_STEP_SIZE, position.x, position.y,
+                    mSubmarine.getAngle() * MathUtils.radiansToDegrees);
 
             mFrameNumber += 1;
         }
