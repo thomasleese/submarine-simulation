@@ -1,12 +1,24 @@
 package org.suhps.simulation;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.ControllerListener;
+import com.badlogic.gdx.controllers.PovDirection;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Disposable;
 
-public class Submarine implements Disposable {
+public class Submarine implements Disposable, InputProcessor, ControllerListener {
+
+    private static final String TAG = "Submarine";
+
+    private static final float MAX_THETA = 20f;
+    private static final float MAX_THRUST = 150f;
 
     private float mWidth;
     private float mCrossSectionalArea;
@@ -18,6 +30,9 @@ public class Submarine implements Disposable {
     private float mFinsDragCoefficient;
 
     private Body mBody;
+
+    private float mThrust = 0;
+    private float mTheta = 0;
 
     public Submarine(float width, float height, float mass, float crossSectionalArea,
                      float dragCoefficient, float liftCoefficientSlope, float spinningDragCoefficient,
@@ -82,9 +97,9 @@ public class Submarine implements Disposable {
         return angle;
     }
 
-    private void applyThrust(ShapeRenderer renderer, float thrust, float theta) {
-        Vector2 thrustVector = new Vector2(thrust, 0);
-        thrustVector.rotate(theta);
+    private void applyThrust(ShapeRenderer renderer) {
+        Vector2 thrustVector = new Vector2(mThrust, 0);
+        thrustVector.rotate(mTheta);
         thrustVector.rotateRad(mBody.getAngle());
 
         Vector2 position = mBody.getWorldPoint(new Vector2(-mWidth / 2f, 0f));
@@ -187,8 +202,26 @@ public class Submarine implements Disposable {
         mBody.applyTorque(drag, true);
     }
 
-    public void update(ShapeRenderer renderer, float thrust, float theta, float fluidDensity) {
-        applyThrust(renderer, thrust, theta);
+    public void update(ShapeRenderer renderer, float fluidDensity) {
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            mTheta += 1f;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            mTheta -= 1f;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            mThrust -= 1f;
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            mThrust += 1f;
+        }
+
+        mTheta = MathUtils.clamp(mTheta, -MAX_THETA, +MAX_THETA);
+        mThrust = MathUtils.clamp(mThrust, 0, MAX_THRUST);
+        applyThrust(renderer);
         applyDrag(renderer, fluidDensity);
         applyLift(renderer, fluidDensity);
         applyFinsLift(renderer, fluidDensity);
@@ -202,6 +235,97 @@ public class Submarine implements Disposable {
 
     public float getAngle() {
         return mBody.getAngle();
+    }
+
+    @Override
+    public void connected(Controller controller) {
+
+    }
+
+    @Override
+    public void disconnected(Controller controller) {
+
+    }
+
+    @Override
+    public boolean buttonDown(Controller controller, int buttonCode) {
+        return false;
+    }
+
+    @Override
+    public boolean buttonUp(Controller controller, int buttonCode) {
+        return false;
+    }
+
+    @Override
+    public boolean axisMoved(Controller controller, int axisCode, float value) {
+        if (axisCode == 2) {
+            mTheta = value * MAX_THETA;
+        } else if (axisCode == 4) {
+            mThrust = (1 - value) * MAX_THRUST;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean povMoved(Controller controller, int povCode, PovDirection value) {
+        return false;
+    }
+
+    @Override
+    public boolean xSliderMoved(Controller controller, int sliderCode, boolean value) {
+        return false;
+    }
+
+    @Override
+    public boolean ySliderMoved(Controller controller, int sliderCode, boolean value) {
+        return false;
+    }
+
+    @Override
+    public boolean accelerometerMoved(Controller controller, int accelerometerCode, Vector3 value) {
+        return false;
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 
 }

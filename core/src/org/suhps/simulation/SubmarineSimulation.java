@@ -5,6 +5,8 @@ import java.text.*;
 import java.util.*;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.math.*;
@@ -31,7 +33,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final float FINS_DRAG_COEFFICIENT = 0.03f;
 
     // Properties of the simulation
-    private static final float SIM_MAX_THRUST = 150f;
     private static final float SIM_STEP_SIZE = 1 / 100f;
 
     // Properties of the course
@@ -52,9 +53,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     private boolean mPaused = true;
     private int mFrameNumber = 0;
-
-    private float mThrust = 0;
-    private float mTheta = 0;
 
     @Override
     public void create() {
@@ -79,6 +77,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         createCourse();
 
         Gdx.input.setInputProcessor(this);
+        Controllers.addListener(mSubmarine);
     }
 
     @Override
@@ -218,30 +217,11 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         mShapeRenderer.identity();
 
-        mSubmarine.update(mShapeRenderer, mThrust, mTheta, FLUID_DENSITY);
+        mSubmarine.update(mShapeRenderer, FLUID_DENSITY);
 
         mShapeRenderer.end();
 
         mRenderer.render(mWorld, mCamera.combined);
-
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            mTheta += 1f;
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            mTheta -= 1f;
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            mThrust -= 1f;
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            mThrust += 1f;
-        }
-
-        mTheta = MathUtils.clamp(mTheta, -20f, +20f);
-        mThrust = MathUtils.clamp(mThrust, 0, SIM_MAX_THRUST);
 
         if (!mPaused) {
             mLogger.log(mFrameNumber * SIM_STEP_SIZE, position.x, position.y,
