@@ -36,7 +36,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     private static final String SIM_CSV_DIRECTORY = "~/Desktop";
     private static final float SIM_STEP_SIZE = 1 / 100f;
 
-    // Propeties of the course
+    // Properties of the course
     private static final float COURSE_WIDTH = 90f;
     private static final float COURSE_HEIGHT = 52f;
     private static final float FLUID_DENSITY = 1000f;
@@ -122,7 +122,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         fixtureDef.friction = 0f;
         fixtureDef.restitution = 0f;
 
-        Fixture fixture = body.createFixture(fixtureDef);
+        body.createFixture(fixtureDef);
 
         shape.dispose();
 
@@ -205,7 +205,6 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     }
 
     private void drawForce(Vector2 position, Vector2 value) {
-        Vector2 start = position;
         Vector2 end = Vector2.X.set(value).scl(0.02f).add(position);
         mShapeRenderer.x(position, 0.1f);
         mShapeRenderer.line(position, end);
