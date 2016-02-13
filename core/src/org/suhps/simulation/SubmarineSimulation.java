@@ -34,6 +34,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
     // Properties of the simulation
     private static final float SIM_STEP_SIZE = 1 / 100f;
+    private static final int SIM_NUMBER_OF_SUBS = 1;
 
     // Properties of the course
     private static final float COURSE_WIDTH = 90f;
@@ -70,7 +71,7 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
         mRenderer = new Box2DDebugRenderer();
         mShapeRenderer = new ShapeRenderer();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < SIM_NUMBER_OF_SUBS; i++) {
             mSubmarines.add(createSubmarine());
         }
 
@@ -89,13 +90,12 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
     }
 
     private Submarine createSubmarine() {
-        float dx = 0f; //MathUtils.random(-100f, 100f);
         float dy = MathUtils.random(-10f, 10f);
 
         return new Submarine(SUB_WIDTH, SUB_HEIGHT, SUB_MASS, SUB_CROSS_SECTIONAL_AREA,
                 SUB_DRAG_COEFFICIENT, SUB_LIFT_COEFFICIENT_SLOPE, SUB_SPINNING_DRAG_COEFFICIENT,
                 FINS_CROSS_SECTIONAL_AREA, FINS_LIFT_COEFFICIENT_SLOPE, FINS_DRAG_COEFFICIENT,
-                COURSE_WIDTH / 2f - 15 + dx, COURSE_HEIGHT / 4f + dy, SUB_INITIAL_SPEED, SUB_INITIAL_ANGLE,
+                COURSE_WIDTH / 2f - 15, COURSE_HEIGHT / 4f + dy, SUB_INITIAL_SPEED, SUB_INITIAL_ANGLE,
                 mWorld);
     }
 
