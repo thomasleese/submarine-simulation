@@ -235,8 +235,10 @@ public class SubmarineSimulation extends ApplicationAdapter implements InputProc
 
         if (!mPaused) {
             Submarine submarine = mSubmarines.get(0);
+
             mLogger.log(mFrameNumber * SIM_STEP_SIZE, submarine.getWorldCenter().x,
-                    submarine.getWorldCenter().y, submarine.getAngle() * MathUtils.radiansToDegrees);
+                    submarine.getWorldCenter().y, submarine.getAngle() * MathUtils.radiansToDegrees,
+                    submarine.getAngleOfAttack() * MathUtils.radiansToDegrees);
 
             mFrameNumber += 1;
         }

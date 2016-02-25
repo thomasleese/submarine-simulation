@@ -237,6 +237,12 @@ public class Submarine implements Disposable, InputProcessor, ControllerListener
         return mBody.getAngle();
     }
 
+    public float getAngleOfAttack() {
+        Vector2 velocity = mBody.getLinearVelocity();
+        float angle = wrapAngle(mBody.getAngle());
+        return wrapAngle(angle - wrapAngle(velocity.angleRad()));
+    }
+
     @Override
     public void connected(Controller controller) {
 

@@ -26,7 +26,7 @@ public class Logger implements Disposable {
 
             Gdx.app.log(TAG, "Writing CSV file to: " + path);
             mWriter = new FileWriter(path);
-            mWriter.append("Time,X,Y,Angle\n");
+            mWriter.append("Time,X,Y,Angle,Angle of Attack\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,7 +41,7 @@ public class Logger implements Disposable {
         }
     }
 
-    public void log(float time, float x, float y, float angle) {
+    public void log(float time, float x, float y, float angle, float angleOfAttack) {
         try {
             mWriter.append(String.valueOf(time));
             mWriter.append(",");
@@ -50,6 +50,8 @@ public class Logger implements Disposable {
             mWriter.append(String.valueOf(y));
             mWriter.append(",");
             mWriter.append(String.valueOf(angle));
+            mWriter.append(",");
+            mWriter.append(String.valueOf(angleOfAttack));
             mWriter.append("\n");
             mWriter.flush();
         } catch (IOException e) {
